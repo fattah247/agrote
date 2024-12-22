@@ -1,7 +1,8 @@
 import 'package:agrote/screens/task_list_page.dart';
+import 'package:agrote/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
-void main() => runApp(Agrote());
+void main() => runApp(const Agrote());
 
 
 class Agrote extends StatelessWidget {
@@ -12,7 +13,7 @@ class Agrote extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Agrote',
-      theme: ThemeData(primarySwatch: Colors.green),
+      theme: AppTheme.lightTheme,
       home: TaskListPage(),
     );
   }

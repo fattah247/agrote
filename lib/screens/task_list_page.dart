@@ -1,47 +1,38 @@
 import 'package:flutter/material.dart';
 import '../models/task.dart';
+import '../services/notification_service.dart';
+import '../widgets/task_item.dart';
+import '../widgets/dashboard.dart';
 import 'task_detail_page.dart';
 import 'add_task_page.dart';
 
 class TaskListPage extends StatefulWidget {
+  const TaskListPage({super.key});
+
   @override
   _TaskListPageState createState() => _TaskListPageState();
 }
 
 class _TaskListPageState extends State<TaskListPage> {
   final List<Task> tasks = [];
+  final NotificationService notificationService = NotificationService();
 
-  // Function to toggle task completion
   void _toggleTaskCompletion(int index) {
     setState(() {
       tasks[index].isDone = !tasks[index].isDone;
     });
-  }
-
-  void _viewTaskDetails(Task task) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => TaskDetailPage(
-          task: task,
-          onUpdateTask: (updatedTask) {
-            setState(() {
-              // Find the task in the list and update its state
-              final index = tasks.indexOf(task);
-              if (index != -1) {
-                tasks[index] = updatedTask;
-              }
-            });
-          },
-        ),
-      ),
-    );
+    if (tasks[index].isDone) {
+      notificationService.showNotification(
+        'Task Completed',
+        'You have completed "${tasks[index].title}"',
+      );
+    }
   }
 
   void _navigateToAddTaskPage() async {
     final Task? newTask = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => AddTaskPage()),
+      MaterialPageRoute(builder: (context) => const AddTaskPage()),
     );
     if (newTask != null) {
       setState(() {
@@ -54,51 +45,56 @@ class _TaskListPageState extends State<TaskListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Farm Task Tracker'),
+        title: const Text('Agrote'),
       ),
-      body: tasks.isEmpty
-          ? Center(
-        child: Text(
-          'No tasks yet. Add some!',
-          style: TextStyle(fontSize: 18),
-        ),
-      )
-          : ListView.builder(
-        itemCount: tasks.length,
-        itemBuilder: (context, index) {
-          final task = tasks[index];
-          return ListTile(
-            title: Text(
-              task.title,
-              style: TextStyle(
-                decoration: task.isDone
-                    ? TextDecoration.lineThrough
-                    : TextDecoration.none,
+      body: Column(
+        children: [
+          Dashboard(tasks: tasks), // Add the dashboard widget
+          Expanded(
+            child: tasks.isEmpty
+                ? const Center(
+              child: Text(
+                'No tasks yet. Add some!',
+                style: TextStyle(fontSize: 18),
               ),
+            )
+                : ListView.builder(
+              itemCount: tasks.length,
+              itemBuilder: (context, index) {
+                final task = tasks[index];
+                return TaskItem(
+                  task: task,
+                  onToggle: () => _toggleTaskCompletion(index),
+                  onViewDetails: () => _viewTaskDetails(task),
+                );
+              },
             ),
-            subtitle: task.crop.isNotEmpty ? Text('Crop: ${task.crop}') : null,
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min, // Ensures the row takes minimal space
-              children: [
-                IconButton(
-                  icon: Icon(Icons.arrow_forward),
-                  onPressed: () => _viewTaskDetails(task),
-                  tooltip: 'View Details',
-                ),
-                Checkbox(
-                  value: task.isDone,
-                  onChanged: (value) => _toggleTaskCompletion(index),
-                ),
-              ],
-            ),
-          );
-        },
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _navigateToAddTaskPage,
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }
 
+  void _viewTaskDetails(Task task) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TaskDetailPage(
+          task: task,
+          onUpdateTask: (updatedTask) {
+            setState(() {
+              final index = tasks.indexOf(task);
+              if (index != -1) {
+                tasks[index] = updatedTask;
+              }
+            });
+          },
+        ),
+      ),
+    );
+  }
 }

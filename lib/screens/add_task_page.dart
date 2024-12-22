@@ -11,6 +11,8 @@ class AddTaskPage extends StatefulWidget {
 class _AddTaskPageState extends State<AddTaskPage> {
   final TextEditingController taskController = TextEditingController();
   final TextEditingController cropController = TextEditingController();
+  String priority = 'Low'; // Default priority
+  bool isRecurring = false;
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +23,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             TextField(
               controller: taskController,
@@ -30,6 +33,22 @@ class _AddTaskPageState extends State<AddTaskPage> {
               controller: cropController,
               decoration: const InputDecoration(labelText: 'Crop (Optional)'),
             ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              value: priority,
+              items: const [
+                DropdownMenuItem(value: 'High', child: Text('High Priority')),
+                DropdownMenuItem(value: 'Medium', child: Text('Medium Priority')),
+                DropdownMenuItem(value: 'Low', child: Text('Low Priority')),
+              ],
+              onChanged: (value) => setState(() => priority = value!),
+              decoration: const InputDecoration(labelText: 'Priority'),
+            ),
+            SwitchListTile(
+              title: const Text('Recurring Task'),
+              value: isRecurring,
+              onChanged: (value) => setState(() => isRecurring = value),
+            ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
@@ -37,6 +56,8 @@ class _AddTaskPageState extends State<AddTaskPage> {
                   final task = Task(
                     title: taskController.text,
                     crop: cropController.text,
+                    priority: priority,
+                    isRecurring: isRecurring,
                   );
                   Navigator.pop(context, task);
                 }
