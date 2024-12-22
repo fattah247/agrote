@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/task.dart';
+import 'task_detail_page.dart';
 import 'add_task_page.dart';
 
 class TaskListPage extends StatefulWidget {
@@ -8,7 +9,7 @@ class TaskListPage extends StatefulWidget {
 }
 
 class _TaskListPageState extends State<TaskListPage> {
-  List<Task> tasks = []; // List of tasks
+  final List<Task> tasks = [];
 
   // Function to toggle task completion
   void _toggleTaskCompletion(int index) {
@@ -17,8 +18,27 @@ class _TaskListPageState extends State<TaskListPage> {
     });
   }
 
-  // Navigate to Add Task Screen and handle the result
-  void _navigateToAddTaskPage(BuildContext context) async {
+  void _viewTaskDetails(Task task) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TaskDetailPage(
+          task: task,
+          onUpdateTask: (updatedTask) {
+            setState(() {
+              // Find the task in the list and update its state
+              final index = tasks.indexOf(task);
+              if (index != -1) {
+                tasks[index] = updatedTask;
+              }
+            });
+          },
+        ),
+      ),
+    );
+  }
+
+  void _navigateToAddTaskPage() async {
     final Task? newTask = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => AddTaskPage()),
@@ -37,7 +57,12 @@ class _TaskListPageState extends State<TaskListPage> {
         title: Text('Farm Task Tracker'),
       ),
       body: tasks.isEmpty
-          ? Center(child: Text('No tasks yet. Add some!'))
+          ? Center(
+        child: Text(
+          'No tasks yet. Add some!',
+          style: TextStyle(fontSize: 18),
+        ),
+      )
           : ListView.builder(
         itemCount: tasks.length,
         itemBuilder: (context, index) {
@@ -52,17 +77,28 @@ class _TaskListPageState extends State<TaskListPage> {
               ),
             ),
             subtitle: task.crop.isNotEmpty ? Text('Crop: ${task.crop}') : null,
-            trailing: Checkbox(
-              value: task.isDone,
-              onChanged: (value) => _toggleTaskCompletion(index),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min, // Ensures the row takes minimal space
+              children: [
+                IconButton(
+                  icon: Icon(Icons.arrow_forward),
+                  onPressed: () => _viewTaskDetails(task),
+                  tooltip: 'View Details',
+                ),
+                Checkbox(
+                  value: task.isDone,
+                  onChanged: (value) => _toggleTaskCompletion(index),
+                ),
+              ],
             ),
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _navigateToAddTaskPage(context),
+        onPressed: _navigateToAddTaskPage,
         child: Icon(Icons.add),
       ),
     );
   }
+
 }
