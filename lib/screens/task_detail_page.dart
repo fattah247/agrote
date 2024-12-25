@@ -1,65 +1,48 @@
 import 'package:flutter/material.dart';
 import '../models/task.dart';
 
-class TaskDetailPage extends StatefulWidget {
+class TaskDetailPage extends StatelessWidget {
   final Task task;
-  final Function(Task) onUpdateTask;
+  final ValueChanged<Task> onUpdateTask; // Callback for updating the task
 
-  const TaskDetailPage({super.key, required this.task, required this.onUpdateTask});
-
-  @override
-  _TaskDetailPageState createState() => _TaskDetailPageState();
-}
-
-class _TaskDetailPageState extends State<TaskDetailPage> {
-  late bool isCompleted;
-
-  @override
-  void initState() {
-    super.initState();
-    isCompleted = widget.task.isDone;
-  }
-
-  void _markAsCompleted() {
-    setState(() {
-      isCompleted = true;
-    });
-    widget.onUpdateTask(widget.task..isDone = true);
-  }
+  const TaskDetailPage(
+      {required this.task, required this.onUpdateTask, super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.task.title),
+        title: Text(task.title),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'Crop: ${widget.task.crop.isNotEmpty ? widget.task.crop : 'N/A'}',
-              style: const TextStyle(fontSize: 18),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Status: ${isCompleted ? "Completed" : "Pending"}',
-              style: const TextStyle(fontSize: 18),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: isCompleted ? null : _markAsCompleted,
-              child: Text(
-                isCompleted ? 'Task Completed' : 'Mark as Completed',
-              ),
-            ),
+            Text('Crop: ${task.crop.isNotEmpty ? task.crop : 'None'}'),
+            Text('Priority: ${task.priority}'),
+            Text('Status: ${task.isDone ? 'Completed' : 'Pending'}'),
+            Text('Recurring: ${task.isRecurring ? 'Yes' : 'No'}'),
+            if (task.dueDate != null)
+              Text('Due Date: ${task.dueDate.toString().split(' ')[0]}'),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                Navigator.pop(context);
+                // Toggle task completion and call the callback
+                final updatedTask = Task(
+                  title: task.title,
+                  crop: task.crop,
+                  priority: task.priority,
+                  isDone: !task.isDone,
+                  // Toggle status
+                  isRecurring: task.isRecurring,
+                  dueDate: task.dueDate,
+                );
+                onUpdateTask(updatedTask); // Call the callback
+                Navigator.pop(context); // Go back to the task list
               },
-              child: const Text('Back'),
+              child:
+                  Text(task.isDone ? 'Mark as Pending' : 'Mark as Completed'),
             ),
           ],
         ),

@@ -1,5 +1,5 @@
-package com.fth.agrote.agrote
+package com.example.agrote
 
 import io.flutter.embedding.android.FlutterActivity
 
-class MainActivity: FlutterActivity()
+class MainActivity : FlutterActivity()

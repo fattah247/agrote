@@ -1,18 +1,38 @@
-allprojects {
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
     repositories {
         google()
         mavenCentral()
     }
+    dependencies {
+        classpath "com.android.tools.build:gradle:8.2.2" // Ensure the Android Gradle Plugin is up to date
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        // Add any additional repositories if required
+    }
 }
 
 rootProject.buildDir = "../build"
+
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
-}
-subprojects {
-    project.evaluationDependsOn(":app")
+
+    afterEvaluate {
+        // Avoid warnings/errors during evaluation by applying compileSdkVersion correctly
+        if (project.hasProperty("android")) {
+            android {
+                compileSdkVersion 35 // Use the correct compile SDK for subprojects
+            }
+        }
+    }
 }
 
+// Define clean task to clean up build directories
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
